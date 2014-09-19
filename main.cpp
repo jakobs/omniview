@@ -1,6 +1,7 @@
 #include "ocam_functions.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <boost/lexical_cast.hpp>
 
 void create_virtualview_undistortion_LUT( 
         cv::Mat &mapx, cv::Mat &mapy, 
@@ -44,12 +45,19 @@ int main(int argc, char *argv[])
 {   
     if( argc < 3 )
     {
-        std::cout << "usage: omniview <videofile> <calibfile>" << std::endl;
+        std::cout << "usage: omniview <videofile> <calibfile> [width height]" << std::endl;
         exit(0);
     }
 
     std::string videofile = argv[1];
     std::string calibfile = argv[2];
+
+    int width = 640, height = 480;
+    if( argc >= 5 )
+    {
+        width = boost::lexical_cast<int>( argv[3] );
+        height = boost::lexical_cast<int>( argv[4] );
+    }
 
     struct ocam_model model; 
     get_ocam_model(&model, calibfile.c_str());
@@ -72,7 +80,7 @@ int main(int argc, char *argv[])
           elevation = 0, 
           zoom = 2.0;
 
-    cv::Size size( 800, 800 );
+    cv::Size size( width, height );
     cv::Mat view( size, CV_8UC3 );
     cv::Mat 
         mapx( size, CV_32FC1 ),
