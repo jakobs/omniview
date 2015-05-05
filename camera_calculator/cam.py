@@ -24,15 +24,16 @@ class OmniCam:
         yi = np.arange( ye, yc, 0.1 )
         self.volume = np.trapz( self.x( yi )**2 * math.pi, yi )
 
-        # sensor
+        # sensor 
         self.pixel_spacing = pixel_spacing
         self.pixels = pixels
         self.sensor_width = pixel_spacing * pixels
-        self.edge_view = ( c + xe ) * self.sensor_width / 2.0 / f
+        self.edge_view = ( c - ye ) * self.sensor_width / f
 
         # DOF
         circle_of_confusion = pixel_spacing
         subject_distance = f+c
+        self.fnumber = fnumber
         self.dof = 2*fnumber*circle_of_confusion*f**2*(subject_distance)**2/ \
             (f**4-fnumber**2*circle_of_confusion**2*subject_distance**2)
 
@@ -41,7 +42,10 @@ class OmniCam:
         print "volume: %d ccm" % ( self.volume * 1e-3 ) 
         print "edge view: %d mm" % ( self.edge_view )
         print "mirror diameter: %d mm" % ( self.mirror_diameter )
-        print "DOF: %d mm" % ( self.dof )
+        print "DOF: %d mm @ f/%.1f" % ( self.dof, self.fnumber )
+        print "mirror parameters:"
+        print "curve k=%.1f, focal point distance c=%.1f" % (self.k, self.c)
+        print "a=%f b=%f" % (self.a, self.b)
 
     def y( self, x ):
         return -np.sqrt((1.0 + (x**2) / (self.b**2))*(self.a**2)) + self.c/2.0
@@ -100,6 +104,10 @@ class OmniCam:
         line, = plt.plot([-self.mirror_diameter/2, self.mirror_diameter/2], [0,0], '--', linewidth=1)
         line, = plt.plot([0,0], [0,self.c+self.f], '--', linewidth=1)
 
+        # draw max lines
+        plt.plot( [0,self.mirror_diameter*2], [0, y*4] )
+        plt.plot( [0,-self.mirror_diameter*2], [0, y*4] )
+
     def virtual_points( self, x, y ):
         xu = []
         yu = []
@@ -120,14 +128,25 @@ class OmniCam:
 #        plt.plot(x,y, 'ro')
 
 # Lensagon C5M1618GS
-# 16mm F1.8
-# oc = OmniCam( k=20.0, c=150.0, f=16.0, mirror_diameter=60.0, fnumber=16.0)
+# 16mm F1.8, 1.1" Sensor, min obj distance 97.7mm
+#oc = OmniCam( k=20.0, c=140.0, f=16.0, mirror_diameter=58.0, fnumber=32.0)
 
-oc = OmniCam( k=15.0, c=200.0, f=20.0, mirror_diameter=60.0, fnumber=32.0)
+# Lensagon C5M1618GS 
+#oc = OmniCam( k=15.0, c=33.0, f=16.0, mirror_diameter=58.0, fnumber=16.0)
+
+# Lensagon C5M3514GS 
+print "Lensagon C5M3514GS" 
+oc = OmniCam( k=20.0, c=145.0, f=35.0, mirror_diameter=58.0, fnumber=16.0)
+
+# Lensagon C5M2514GS
+#print "Lensagon C5M2514GS"
+#oc = OmniCam( k=15.0, c=90.0, f=25.0, mirror_diameter=58.0, fnumber=16.0)
+
+
+oc.print_stats()
 
 oc.plot_mirror()
 oc.plot_circle()
-oc.print_stats()
 
 plt.axes().set_aspect('equal')
 #plt.add_subplot(111,aspect='equal')
