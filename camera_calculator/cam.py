@@ -11,8 +11,8 @@ class OmniCam:
         self.mirror_diameter = mirror_diameter
 
         # derived values 
-        self.a = c/2*np.sqrt((k-2)/k)
-        self.b = c/2*np.sqrt(2/k)
+        self.a = c/2.0*np.sqrt((k-2.0)/k)
+        self.b = c/2.0*np.sqrt(2.0/k)
 
         # max angle
         xe = mirror_diameter/2.0 
@@ -23,12 +23,14 @@ class OmniCam:
         yc = self.y( 0 )
         yi = np.arange( ye, yc, 0.1 )
         self.volume = np.trapz( self.x( yi )**2 * math.pi, yi )
+        self.mirror_height = yc - ye
 
         # sensor 
         self.pixel_spacing = pixel_spacing
         self.pixels = pixels
         self.sensor_width = pixel_spacing * pixels
         self.edge_view = ( c - ye ) * self.sensor_width / f
+        self.corner_view = self.edge_view * np.sqrt(2.0) 
 
         # DOF
         circle_of_confusion = pixel_spacing
@@ -38,10 +40,11 @@ class OmniCam:
             (f**4-fnumber**2*circle_of_confusion**2*subject_distance**2)
 
     def print_stats(self):
-        print "max angle: %d deg" % (self.max_angle / math.pi * 180)
+        print "max angle: %d deg (%d over horizon)" % (self.max_angle / math.pi * 180, self.max_angle / math.pi * 180 - 90)
         print "volume: %d ccm" % ( self.volume * 1e-3 ) 
-        print "edge view: %d mm" % ( self.edge_view )
+        print "edge view (corner view): %d mm (%d mm)" % ( self.edge_view, self.corner_view )
         print "mirror diameter: %d mm" % ( self.mirror_diameter )
+        print "mirror height: %d mm" % ( self.mirror_height )
         print "DOF: %d mm @ f/%.1f" % ( self.dof, self.fnumber )
         print "mirror parameters:"
         print "curve k=%.1f, focal point distance c=%.1f" % (self.k, self.c)
@@ -136,19 +139,18 @@ class OmniCam:
 
 # Lensagon C5M3514GS 
 print "Lensagon C5M3514GS" 
-oc = OmniCam( k=20.0, c=145.0, f=35.0, mirror_diameter=58.0, fnumber=16.0)
+oc = OmniCam( k=15.0, c=120.0, f=35.0, mirror_diameter=58.0, fnumber=16.0)
 
 # Lensagon C5M2514GS
 #print "Lensagon C5M2514GS"
 #oc = OmniCam( k=15.0, c=90.0, f=25.0, mirror_diameter=58.0, fnumber=16.0)
 
-
 oc.print_stats()
 
 oc.plot_mirror()
-oc.plot_circle()
+#oc.plot_circle()
 
-plt.axes().set_aspect('equal')
+#plt.axes().set_aspect('equal')
 #plt.add_subplot(111,aspect='equal')
-plt.show()
+#plt.show()
 
