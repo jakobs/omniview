@@ -3,6 +3,12 @@ import matplotlib.pyplot as plt
 import scipy.optimize
 import math
 
+def annotate_dim(ax,xyfrom,xyto,text=None):
+    if text is None:
+        text = str(np.sqrt( (xyfrom[0]-xyto[0])**2 + (xyfrom[1]-xyto[1])**2 ))
+    ax.annotate("",xyfrom,xyto,arrowprops=dict(arrowstyle='<->'))
+    ax.text((xyto[0]+xyfrom[0])/2,(xyto[1]+xyfrom[1])/2,text,fontsize=8)
+
 class OmniCam:
     def __init__( self, k, c, f, mirror_diameter, fnumber, pixel_spacing = 0.0055, pixels = 2048):
         self.k = k
@@ -102,6 +108,15 @@ class OmniCam:
         line, = plt.plot(x1, self.y(x1), '-', linewidth=2)
         y = self.y(self.mirror_diameter/2)
         line, = plt.plot([-self.mirror_diameter/2, self.mirror_diameter/2], [y,y], '-', linewidth=1)
+
+        text = "$y=-a\\sqrt{\\frac{x^2}{b^2}+1}$\n$a=%.5f$\n$b=%.5f$" % (self.a, self.b)
+        plt.annotate( text, xy=(-self.mirror_diameter/2, y), xytext=(-self.mirror_diameter/2 - 100, y), \
+                arrowprops=dict(facecolor='black', shrink=0.01) )
+
+        annotate_dim( plt.gca(), [-self.mirror_diameter/2, y - 15], [self.mirror_diameter/2, y - 15] )
+        annotate_dim( plt.gca(), [self.mirror_diameter/2 + 15, y], [self.mirror_diameter/2 + 15, 0] )
+        annotate_dim( plt.gca(), [self.mirror_diameter/2 + 15, 0], [self.mirror_diameter/2 + 15, self.y(0)] )
+        annotate_dim( plt.gca(), [-(self.mirror_diameter/2 + 15), 0], [-(self.mirror_diameter/2 + 15), self.c] )
         
         # draw helper axis
         line, = plt.plot([-self.mirror_diameter/2, self.mirror_diameter/2], [0,0], '--', linewidth=1)
@@ -138,8 +153,9 @@ class OmniCam:
 #oc = OmniCam( k=15.0, c=33.0, f=16.0, mirror_diameter=58.0, fnumber=16.0)
 
 # Lensagon C5M3514GS 
+# 35mm F1.4, 1.1" Sensor, min obj distance 110mm
 print "Lensagon C5M3514GS" 
-oc = OmniCam( k=15.0, c=120.0, f=35.0, mirror_diameter=58.0, fnumber=16.0)
+oc = OmniCam( k=17.0, c=155.0, f=35.0, mirror_diameter=58.0, fnumber=16.0)
 
 # Lensagon C5M2514GS
 #print "Lensagon C5M2514GS"
@@ -150,7 +166,7 @@ oc.print_stats()
 oc.plot_mirror()
 #oc.plot_circle()
 
-#plt.axes().set_aspect('equal')
+plt.axes().set_aspect('equal')
 #plt.add_subplot(111,aspect='equal')
-#plt.show()
+plt.show()
 
